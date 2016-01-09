@@ -1,0 +1,22 @@
+.container
+  %p.lead= "Add host"
+  %hr
+  = simple_form_for @host do |f|
+    = f.error_notification
+    .form-group
+      = f.input :name,  label_html: { class: 'my_class' }
+      = f.input :ip,    label_html: { class: 'my_class' }
+      = f.input :dns,   label_html: { class: 'my_class' }
+      = f.input :port, as: :integer, input_html: { value: '10050', min: '1', max: '65535', step: 'any', class: 'my_class' }
+      %div{:align => "right"}
+        -#= f.input :hostgroup_id do
+        -#  = f.select :hostgroup_id, @hostgroups.map { |t| [t.name, t.id] }, include_blank: true
+        %b Use IP ?
+        = f.input_field :useip, as: :boolean, boolean_style: :inline
+    .form-actions
+      = link_to 'Go back', :back, class: 'btn btn-primary'
+      = f.button :submit, "Create", class: 'btn btn-success'
+
+
+
+

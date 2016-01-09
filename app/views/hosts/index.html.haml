@@ -1,0 +1,20 @@
+.container
+  %h2
+    %b Hosts
+  %table.table
+    %tr
+      %th Name
+      -#%th Hostgroup
+      %th IP
+      %th Domain Name
+      %th Use IP
+    - @hosts.each do |host|
+      %tr
+        %td= link_to host.name, host_path(host)
+        -#%td= host.group ? Hostgroup.find(host.group).name : 'No team assigned'
+        %td= host.ip
+        %td= host.dns
+        %td= host.useip?
+  %hr
+  %div{:align => "right"}
+    = link_to 'Add host', new_host_path, class: 'btn btn-success'
