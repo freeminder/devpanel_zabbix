@@ -9,15 +9,31 @@
       %th Host added at
     %tr
       %td= @host.name
-      -#%td= @host.group ? Hostgroup.find(host.group).name : 'No team assigned'
+      -#%td= @host.group ? Hostgroup.find(host.group).name : 'No hostgroup assigned'
       %td= @host.ip
       %td= @host.dns
       %td= @host.useip?
       %td= @host.created_at
 
+  %br/
+  %p.lead= "Host debug info:"
+  %pre.code= @host_info_output
+  %hr
+  %br/
+  %p.lead= "Host graphs debug info:"
+  %pre.code= @host_graphs_output
+  %hr
+  %br/
+  - @host_graphs_output.each do |e|
+    %br/
+    %p.lead= "#{e['name']} graph:"
+    -#=image_tag "graph_#{e['graphid']}.png"
+    %img(src="/images/graph_#{e['graphid']}.png")
+    %hr
+
+
 
   %div{:align => "right"}
-    %hr
     = link_to 'Go back', :back, class: 'btn btn-primary'
     = link_to 'Delete', @host_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger' # if current_user.admin?
     -#= link_to 'Edit', edit_host_path, class: 'btn btn-success'

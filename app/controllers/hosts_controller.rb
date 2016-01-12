@@ -2,19 +2,45 @@ class HostsController < ApplicationController
 
   def index
     @hosts = Host.all
-
-    info = ZBX.query(
-      :method => "host.get",
-      :params => { 
-        "output": "extend" 
-      }
-    )
-
-    # render :text => info
   end
 
   def show
     @host = Host.find(params[:id])
+    @host_info_output = ZBX.query(
+      method: "host.get",
+      params: {
+          "output": "extend",
+          "filter": {
+              "host": [
+                  @host.name
+              ]
+          }
+      }
+    )
+    @host_graphs_output = ZBX.query(
+      method: "graph.get",
+      params: {
+          "output": "extend",
+          "hostids": @host.host_id,
+          "sortfield": "name"
+      }
+    )
+
+    # init and auth Mechanize to grab the graphs
+    @agent = Mechanize.new 
+    @agent.get(ENV['ZBX_URL']) do |login_page|
+      loggedin_page = login_page.form_with(:action => 'index.php') do |form|
+        username_field = form.field_with(:id => 'name')
+        username_field.value = ENV['ZBX_USER']
+        password_field = form.field_with(:id => 'password')
+        password_field.value = ENV['ZBX_PASSWORD']
+      end.click_button
+    end
+    # remove old graphs if exists and grab new ones
+    @host_graphs_output.each do |e|
+      File.delete("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png") if File.exist?("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png")
+      @agent.get("#{ENV['ZBX_URL']}/chart2.php?graphid=#{e['graphid']}").save "#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png"
+    end
   end
 
   def new
@@ -44,8 +70,6 @@ class HostsController < ApplicationController
 
       # show success popup
       flash[:success] = "Host has been successfully added!"
-      # redirect and show host's info
-      # redirect_to @host
       redirect_to controller: 'hosts', action: 'index'
     else
       render 'new'
