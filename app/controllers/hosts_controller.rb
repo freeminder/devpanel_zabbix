@@ -2,6 +2,40 @@ class HostsController < ApplicationController
 
   def index
     @hosts = Host.all
+
+    # generate array with hosts info
+    @host_generic_info = ZBX.query(
+      method: "host.get",
+      params: {
+        "output": "extend"
+      }
+    )
+
+    # generate array with hostids
+    @hostids = Array.new
+    @host_generic_info.each { |host| @hostids << host["hostid"] }
+
+    # generate array with interfaces data
+    @host_interface_info = ZBX.query(
+      "method": "hostinterface.get",
+      "params": {
+        "output": "extend",
+        "hostids": @hostids
+      }
+    )
+
+    # generate array of interfaces with associated hostids and internal hosts
+    @hosts_arr = Array.new
+    @host_interface_info.each do |int|
+      @host_generic_info.each do |host|
+        @hosts.each do |int_host|
+          if int["hostid"] == host["hostid"] and int_host.name == host["name"]
+            @hosts_arr << Hash[name: host["name"], ip: int["ip"], dns: int["dns"], useip: int["useip"], host_obj: int_host]
+          end
+        end
+      end
+    end
+
   end
 
   def show
@@ -9,20 +43,20 @@ class HostsController < ApplicationController
     @host_info_output = ZBX.query(
       method: "host.get",
       params: {
-          "output": "extend",
-          "filter": {
-              "host": [
-                  @host.name
-              ]
-          }
+        "output": "extend",
+        "filter": {
+          "host": [
+            @host.name
+          ]
+        }
       }
     )
     @host_graphs_output = ZBX.query(
       method: "graph.get",
       params: {
-          "output": "extend",
-          "hostids": @host.host_id,
-          "sortfield": "name"
+        "output": "extend",
+        "hostids": @host.host_id,
+        "sortfield": "name"
       }
     )
 
@@ -52,20 +86,33 @@ class HostsController < ApplicationController
     @host = Host.new(host_params)
     if @host.save
       # add host
-      host_id = ZBX.hosts.create_or_update(
-        :host => params[:host][:name],
-        :interfaces => [
-          {
-            :type => 1,
-            :main => 1,
-            :ip => params[:host][:ip],
-            :dns => params[:host][:dns],
-            :port => params[:host][:port],
-            :useip => params[:host][:useip]
-          }
-        ],
-        :groups => [ :groupid => ZBX.hostgroups.get_id(:name => "Linux servers") ]
+      host_id = ZBX.query(
+        method: "host.create",
+        params: {
+          "host":  params[:host][:name],
+          "interfaces": [
+            {
+              "type":  1,
+              "main":  1,
+              "ip":    params[:host][:ip],
+              "dns":   params[:host][:dns],
+              "port":  params[:host][:port],
+              "useip": params[:host][:useip]
+            }
+          ],
+          "groups": [
+            {
+              "groupid": '2'
+            }
+          ],
+          "templates":[
+            {
+              "templateid": '10001'
+            }
+          ]
+        }
       )
+
       @host.update_attributes(host_id: host_id)
 
       # show success popup
@@ -116,5 +163,4 @@ private
   end
 
 end
-
 
