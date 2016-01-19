@@ -1,0 +1,20 @@
+.container
+  %p.lead= "Add user"
+  %hr
+  = simple_form_for @user do |f|
+    = f.error_notification
+    .form-group
+      = f.input :email, label_html: { class: 'my_class' }
+      = f.input :first_name, label_html: { class: 'my_class' }
+      = f.input :last_name, label_html: { class: 'my_class' }
+      = f.input :rate, as: :integer, label_html: { class: 'my_class' }, input_html: { min: '0', max: '200', step: 'any' }
+      = f.input :password, hint: false, error_html: { id: 'password_error'}
+      = f.input :password_confirmation, label: false
+      %div{:align => "right"}
+        = f.input :team_id do
+          = f.select :team_id, @teams.map { |t| [t.name, t.id] }, include_blank: true
+        %b Admin
+        = f.input_field :admin, as: :boolean, boolean_style: :inline
+    .form-actions
+      = link_to 'Go back', :back, class: 'btn btn-primary'
+      = f.button :submit, "Create", class: 'btn btn-primary'

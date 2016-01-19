@@ -6,13 +6,18 @@
       %th Name
       %th IP
       %th Domain Name
+      %th Port
       %th Use IP
     - @hosts_arr.each do |host|
       %tr
-        %td= link_to host[:name], host_path(host[:host_obj]) if host[:host_obj]
+        %td= link_to host[:name], host_path(host[:id])
         %td= host[:ip]
         %td= host[:dns]
-        %td= host[:useip]
+        %td= host[:port]
+        - if host[:useip] == "1"
+          %td= "Yes"
+        - else
+          %td= "No"
 
   %hr
   %div{:align => "right"}

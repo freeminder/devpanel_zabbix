@@ -1,0 +1,14 @@
+.container
+  %p.lead= "#{@user.first_name} #{@user.last_name} (#{@user.email})"
+  %hr
+  %div{:align => "right"}
+    = "Member since #{l @user.created_at.to_date, format: :short}"
+    %hr
+    = "Member of "
+    = link_to @team.name, team_path(@team) if @team
+    = "no one" if @team.nil?
+    = " team"
+    %hr
+    = link_to 'Go back', :back, class: 'btn btn-primary'
+    = link_to 'Delete', user_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger' if current_user.admin?
+    = link_to 'Edit', edit_user_path, class: 'btn btn-success'

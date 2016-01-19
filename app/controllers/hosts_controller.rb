@@ -1,8 +1,8 @@
 class HostsController < ApplicationController
+  before_filter :grab_data, except: [:new, :create, :edit, :update, :destroy]
 
-  def index
-    @hosts = Host.all
 
+  def grab_data
     # generate array with hosts info
     @host_generic_info = ZBX.query(
       method: "host.get",
@@ -28,52 +28,72 @@ class HostsController < ApplicationController
     @hosts_arr = Array.new
     @host_interface_info.each do |int|
       @host_generic_info.each do |host|
-        @hosts.each do |int_host|
-          if int["hostid"] == host["hostid"] and int_host.name == host["name"]
-            @hosts_arr << Hash[name: host["name"], ip: int["ip"], dns: int["dns"], useip: int["useip"], host_obj: int_host]
-          end
+        if int["hostid"] == host["hostid"]
+          @hosts_arr << Hash[id: host["hostid"], name: host["name"], ip: int["ip"], dns: int["dns"], port: int["port"], useip: int["useip"]]
         end
       end
     end
+  end
 
+  def index
   end
 
   def show
-    @host = Host.find(params[:id])
-    @host_info_output = ZBX.query(
-      method: "host.get",
-      params: {
-        "output": "extend",
-        "filter": {
-          "host": [
-            @host.name
-          ]
-        }
-      }
-    )
-    @host_graphs_output = ZBX.query(
-      method: "graph.get",
-      params: {
-        "output": "extend",
-        "hostids": @host.host_id,
-        "sortfield": "name"
-      }
-    )
+    if params[:id] != '' and params[:id] != 'index' and params[:id] != 'new' and params[:id] != 'edit'
+      @host = @hosts_arr.select { |v| v[:id] =~ /#{params[:id]}/ }.first
 
-    # init and auth Mechanize to grab the graphs
-    @agent = Mechanize.new 
-    @agent.get(ENV['ZBX_URL']) do |login_page|
-      loggedin_page = login_page.form_with(:action => 'index.php') do |form|
-        username_field = form.field_with(:id => 'name')
-        username_field.value = ENV['ZBX_USER']
-        password_field = form.field_with(:id => 'password')
-        password_field.value = ENV['ZBX_PASSWORD']
-      end.click_button
-    end
-    # remove old graphs if exists and grab new ones
-    @host_graphs_output.each do |e|
-      File.delete("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png") if File.exist?("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png")
-      @agent.get("#{ENV['ZBX_URL']}/chart2.php?graphid=#{e['graphid']}").save "#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png"
+      # template info
+      @template_info = ZBX.query(
+        "method": "template.get",
+        "params": {
+          "output": "extend",
+          "hostids": @host[:id]
+        }
+      )
+
+      @host[:template_name] = @template_info.first["name"]
+      @host[:template_id]   = @template_info.first["templateid"]
+
+      # hostgroup info
+      @hostgroup_info = ZBX.query(
+        "method": "hostgroup.get",
+        "params": {
+          "output": "extend",
+          "hostids": @host[:id]
+        }
+      )
+
+      @host[:hostgroup_name] = @hostgroup_info.first["name"]
+      @host[:hostgroup_id]   = @hostgroup_info.first["groupid"]
+
+      # graph info
+      @host_graphs_output = ZBX.query(
+        method: "graph.get",
+        params: {
+          "output": "extend",
+          "hostids": @host[:id],
+          "sortfield": "name"
+        }
+      )
+
+      # init and auth Mechanize to grab the graphs
+      @agent = Mechanize.new 
+      @agent.get(ENV['ZBX_URL']) do |login_page|
+        loggedin_page = login_page.form_with(:action => 'index.php') do |form|
+          username_field = form.field_with(:id => 'name')
+          username_field.value = ENV['ZBX_USER']
+          password_field = form.field_with(:id => 'password')
+          password_field.value = ENV['ZBX_PASSWORD']
+        end.click_button
+      end
+      # remove old graphs if exists and grab new ones
+      @host_graphs_output.each do |e|
+        File.delete("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png") if File.exist?("#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png")
+        @agent.get("#{ENV['ZBX_URL']}/chart2.php?graphid=#{e['graphid']}").save "#{Rails.root.to_s}/public/images/graph_#{e['graphid']}.png"
+      end
+      render 'show'
+    else
+      puts "condition_catched!"
     end
   end
 
