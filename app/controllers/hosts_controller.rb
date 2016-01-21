@@ -1,6 +1,6 @@
 class HostsController < ApplicationController
-  before_filter :grab_data, except: [:new, :create, :edit, :update, :destroy]
-
+  before_filter :grab_data, except: [:new, :create]
+  before_filter :grab_additional_data, except: [:index, :show, :create, :update, :destroy]
 
   def grab_data
     # generate array with hosts info
@@ -29,42 +29,61 @@ class HostsController < ApplicationController
     @host_interface_info.each do |int|
       @host_generic_info.each do |host|
         if int["hostid"] == host["hostid"]
-          @hosts_arr << Hash[id: host["hostid"], name: host["name"], ip: int["ip"], dns: int["dns"], port: int["port"], useip: int["useip"]]
+          @hosts_arr << Hash[id: host["hostid"], name: host["name"], interfaceid: int["interfaceid"], ip: int["ip"], dns: int["dns"], port: int["port"], useip: int["useip"]]
         end
       end
     end
+
+    # templates and hostgroups
+    @hosts_arr.each do |host|
+      ZBX.query(
+        method: "template.get",
+        params: {
+          "output": "extend",
+          "hostids": host[:id]
+        }
+      ).each do |template|
+        host[:template_id]   = template["templateid"]
+        host[:template_name] = template["name"]
+      end
+
+      ZBX.query(
+        "method": "hostgroup.get",
+        "params": {
+          "output": "extend",
+          "hostids": host[:id]
+        }
+      ).each do |hostgroup|
+        host[:hostgroup_id]   = hostgroup["groupid"]
+        host[:hostgroup_name] = hostgroup["name"]
+      end
+    end
+  end
+
+  def grab_additional_data
+    # generate array with templates info
+    @templates = ZBX.query(
+      method: "template.get",
+      params: {
+        "output": "extend",
+      },
+    )
+
+    # generate array with hostgroups info
+    @hostgroups = ZBX.query(
+      method: "hostgroup.get",
+      params: {
+        "output": "extend",
+      },
+    )
   end
 
   def index
   end
 
   def show
-    if params[:id] != '' and params[:id] != 'index' and params[:id] != 'new' and params[:id] != 'edit'
+    if params[:id] == params[:id].to_i.to_s
       @host = @hosts_arr.select { |v| v[:id] =~ /#{params[:id]}/ }.first
-
-      # template info
-      @template_info = ZBX.query(
-        "method": "template.get",
-        "params": {
-          "output": "extend",
-          "hostids": @host[:id]
-        }
-      )
-
-      @host[:template_name] = @template_info.first["name"]
-      @host[:template_id]   = @template_info.first["templateid"]
-
-      # hostgroup info
-      @hostgroup_info = ZBX.query(
-        "method": "hostgroup.get",
-        "params": {
-          "output": "extend",
-          "hostids": @host[:id]
-        }
-      )
-
-      @host[:hostgroup_name] = @hostgroup_info.first["name"]
-      @host[:hostgroup_id]   = @hostgroup_info.first["groupid"]
 
       # graph info
       @host_graphs_output = ZBX.query(
@@ -93,50 +112,46 @@ class HostsController < ApplicationController
       end
       render 'show'
     else
-      puts "condition_catched!"
+      respond_to do |format|
+        format.any { redirect_to action: 'index' }
+        flash[:error] = 'Wrong host id!'
+      end
     end
   end
 
   def new
     @host = Host.new
-    @hostgroups = Hostgroup.all
   end
 
   def create
-    @host = Host.new(host_params)
-    if @host.save
-      # add host
-      host_id = ZBX.query(
-        method: "host.create",
-        params: {
-          "host":  params[:host][:name],
-          "interfaces": [
-            {
-              "type":  1,
-              "main":  1,
-              "ip":    params[:host][:ip],
-              "dns":   params[:host][:dns],
-              "port":  params[:host][:port],
-              "useip": params[:host][:useip]
-            }
-          ],
-          "groups": [
-            {
-              "groupid": '2'
-            }
-          ],
-          "templates":[
-            {
-              "templateid": '10001'
-            }
-          ]
-        }
-      )
-
-      @host.update_attributes(host_id: host_id)
-
+    if ZBX.query(
+      method: "host.create",
+      params: {
+        "host":  params[:host][:name],
+        "interfaces": [
+          {
+            "type":  1,
+            "main":  1,
+            "ip":    params[:host][:ip],
+            "dns":   params[:host][:dns],
+            "port":  params[:host][:port],
+            "useip": params[:host][:useip]
+          }
+        ],
+        "groups": [
+          {
+            "groupid": params[:host][:groupid]
+          }
+        ],
+        "templates":[
+          {
+            "templateid": params[:host][:templateid]
+          }
+        ]
+      }
+    )['hostids']
       # show success popup
-      flash[:success] = "Host has been successfully added!"
+      flash[:notice] = "Host has been successfully added!"
       redirect_to controller: 'hosts', action: 'index'
     else
       render 'new'
@@ -144,34 +159,83 @@ class HostsController < ApplicationController
   end
 
   def edit
-    @host = Host.find(params[:id])
+    if params[:id] == params[:id].to_i.to_s
+      @host = @hosts_arr.select { |v| v[:id] =~ /#{params[:id]}/ }.first
+    else
+      # show error popup
+      respond_to do |format|
+        format.any { redirect_to action: 'show' }
+        flash[:error] = 'Wrong host id!'
+      end
+    end
   end
 
   def update
-    @host = Host.find(params[:id])
-    if @host.update_attributes(host_params)
+    if params[:id] == params[:id].to_i.to_s
+      @host = @hosts_arr.select { |v| v[:id] =~ /#{params[:id]}/ }.first
+
+      # update name, template and hostgroup
+      ZBX.query(
+        method: "host.update",
+        params: {
+          "hostid": @host[:id],
+          "host":      params[:host][:name],
+          "name":      params[:host][:name],
+          "groups": [
+            {
+              "groupid": params[:host][:groupid]
+            }
+          ],
+          # Template's change causes items dependant errors
+          # "templates":[
+          #   {
+          #     "templateid": params[:host][:templateid]
+          #   }
+          # ]
+        }
+      )
+
+      # update hostinterface
+      ZBX.query(
+        method: "hostinterface.update",
+        params: {
+          "interfaceid": @host[:interfaceid],
+          "ip":     params[:host][:ip],
+          "dns":    params[:host][:dns],
+          "port":   params[:host][:port],
+          "useip":  params[:host][:useip]
+        }
+      )
+
+      # show success popup
       respond_to do |format|
         format.any { redirect_to :back, notice: 'Host has been successfully updated!' }
       end
     else
+      # show error popup
       respond_to do |format|
-        format.any { render action: 'edit' }
+        format.any { redirect_to action: 'edit' }
+        flash[:error] = 'Wrong host id!'
       end
     end
   end
 
   def destroy
-    @host = Host.find(params[:id])
-    # Remove host first, while name exists in DB
-    ZBX.hosts.delete ZBX.hosts.get_id(:host => @host.name)
-    if @host.destroy
+    if params[:id] == params[:id].to_i.to_s
+      @host = @hosts_arr.select { |v| v[:id] =~ /#{params[:id]}/ }.first
+
+      ZBX.hosts.delete ZBX.hosts.get_id(:host => @host[:name])
+
+      # show success popup
       respond_to do |format|
         format.any { redirect_to action: 'index' }
         flash[:notice] = 'Host has been successfully removed!'
       end
     else
+      # show error popup
       respond_to do |format|
-        format.any { render action: 'edit' }
+        format.any { redirect_to action: 'show' }
+        flash[:error] = 'Wrong host id!'
       end
     end
   end

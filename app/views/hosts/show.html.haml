@@ -3,10 +3,10 @@
     %tr
       %th Name
       %th ID
-      %th Hostgroup Name
-      %th Hostgroup ID
       %th Template Name
       %th Template ID
+      %th Hostgroup Name
+      %th Hostgroup ID
       %th IP
       %th Domain Name
       %th Port
@@ -40,5 +40,5 @@
   %div{:align => "right"}
     = link_to 'Go back', :back, class: 'btn btn-primary'
     = link_to 'Delete', @host_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger' # if current_user.admin?
-    -#= link_to 'Edit', edit_host_path, class: 'btn btn-success'
+    = link_to 'Edit', edit_host_path, class: 'btn btn-warning'
 

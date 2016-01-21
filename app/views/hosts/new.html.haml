@@ -1,22 +1,29 @@
 .container
   %p.lead= "Add host"
   %hr
-  = simple_form_for @host do |f|
-    = f.error_notification
+  = form_tag("/hosts", method: "post") do
     .form-group
-      = f.input :name,  label_html: { class: 'my_class' }
-      = f.input :ip,    label_html: { class: 'my_class' }
-      = f.input :dns,   label_html: { class: 'my_class' }
-      = f.input :port, as: :integer, input_html: { value: '10050', min: '1', max: '65535', step: 'any', class: 'my_class' }
+      / = hidden_field_tag 'all'
+      = label_tag 'name', 'Host Name'
+      = text_field_tag 'host[name]',  'agent007', class: 'form-control'
+      = label_tag 'host[templateid]', 'Template'
+      = select_tag 'host[templateid]', options_for_select(@templates.collect {|hg| [ hg['name'], hg['templateid'] ] }, '10118'), class: 'form-control'
+      = label_tag 'host[groupid]', 'Hostgroup'
+      = select_tag 'host[groupid]', options_for_select(@hostgroups.collect {|hg| [ hg['name'], hg['groupid'] ] }, '2'), class: 'form-control'
+      = label_tag 'ip', 'IP Address'
+      = text_field_tag 'host[ip]',    '172.17.0.2', class: 'form-control'
+      = label_tag 'dns', 'DNS Name'
+      = text_field_tag 'host[dns]',   'agent007.local', class: 'form-control'
+      = label_tag 'port', 'Port'
+      = text_field_tag 'host[port]',  '10050', class: 'form-control'
       %div{:align => "right"}
-        -#= f.input :hostgroup_id do
-        -#  = f.select :hostgroup_id, @hostgroups.map { |t| [t.name, t.id] }, include_blank: true
-        %b Use IP ?
-        = f.input_field :useip, as: :boolean, boolean_style: :inline
+        = label_tag 'useip', 'Use IP ?'
+        = check_box_tag  'host[useip]', '1', true
+      %br/
+      %hr
+
     .form-actions
-      = link_to 'Go back', :back, class: 'btn btn-primary'
-      = f.button :submit, "Create", class: 'btn btn-success'
-
-
-
+      %div{:align => "right"}
+        = link_to 'Go back', :back, class: 'btn btn-primary'
+        = submit_tag("Add host", class: 'btn btn-success')
 

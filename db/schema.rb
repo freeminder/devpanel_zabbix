@@ -11,27 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160108121957) do
-
-  create_table "hostgroups", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string   "name"
-  end
-
-  create_table "hosts", force: :cascade do |t|
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.string   "name"
-    t.string   "ip"
-    t.string   "dns"
-    t.integer  "port"
-    t.boolean  "useip"
-    t.integer  "host_id"
-    t.integer  "hostgroup_id"
-  end
-
-  add_index "hosts", ["hostgroup_id"], name: "index_hosts_on_hostgroup_id"
+ActiveRecord::Schema.define(version: 20160108090300) do
 
   create_table "users", force: :cascade do |t|
     t.string   "email",                  default: "",    null: false
