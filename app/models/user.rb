@@ -4,7 +4,10 @@ class User < ActiveRecord::Base
   #  :registerable,
   devise :database_authenticatable,
          :recoverable, :rememberable, :trackable, :validatable
+  
   validates :email, presence: true, uniqueness: true
-
+  # has_secure_password
+  # validates :password, presence: true, confirmation: true, length: { minimum: 8 }
+  
   belongs_to :team
 end

@@ -1,16 +1,37 @@
 class UsersController < ApplicationController
 
   before_filter :authorize_admin, except: [:show, :edit, :update]
-  before_filter :grab_data, only: [:index, :show, :update, :destroy]
+  before_filter :grab_data, only: [:index, :show, :edit, :update, :destroy]
+  before_filter :user_types, only: [:index, :show, :new, :edit]
 
   def grab_data
     # generate array with usermedias
-    @usermedia_arr = ZBX.query(
+    @usermedias_arr = ZBX.query(
       "method": "usermedia.get",
       "params": {
         "output": "extend",
       },
     )
+
+    # extract emails to new array
+    @useremails_arr = Array.new
+    @usermedias_arr.each {|um| @useremails_arr << um["sendto"]}
+
+    # generate array with Zabbix users
+    @zbx_users_arr = ZBX.query(
+      "method": "user.get",
+      "params": {
+        "output": "extend",
+      },
+    )
+  end
+
+  def user_types
+    require 'ostruct'
+    @types = Array.new
+    @types << OpenStruct.new( id: 1, name: "Zabbix User" )
+    @types << OpenStruct.new( id: 2, name: "Zabbix Admin" )
+    @types << OpenStruct.new( id: 3, name: "Zabbix Super Admin" )
   end
 
   def index
@@ -18,6 +39,12 @@ class UsersController < ApplicationController
   end
 
   def show
+    # search for user type
+    @zbx_users_arr.each do |u|
+      @user_type = u["type"] if u["name"] == User.find(params[:id]).first_name and u["surname"] == User.find(params[:id]).last_name
+    end
+
+    # access control
     if current_user.admin?
       @user = User.find(params[:id])
       @team = Team.find(@user.team_id)
@@ -32,7 +59,7 @@ class UsersController < ApplicationController
   end
 
   def new
-    @user = User.new
+    @user  = User.new
     @teams = Team.all
   end
 
@@ -40,12 +67,9 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     @teams = Team.all
     if @user.save
-      # remap internal group id with Zabbix user type:
-      # 1 - (default) Zabbix user; 
-      # 2 - Zabbix admin; 
-      # 3 - Zabbix super admin.
-      params[:user][:team_id] = 1 if params[:user][:team_id] == 111
-      params[:user][:team_id] = 2 if params[:user][:team_id] == 222
+      # remap internal group id with Zabbix:
+      # params[:user][:team_id] = 1 if params[:user][:team_id] == 111
+      # params[:user][:team_id] = 2 if params[:user][:team_id] == 222
 
       # sync user with Zabbix
       ZBX.query(
@@ -54,7 +78,7 @@ class UsersController < ApplicationController
           "alias":   "#{params[:user][:first_name]} #{params[:user][:last_name]}",
           "name":    params[:user][:first_name],
           "surname": params[:user][:last_name],
-          "type":    params[:user][:team_id],
+          "type":    params[:user][:type_id],
           "passwd":  params[:user][:password],
           "usrgrps": [
             {
@@ -92,8 +116,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     # find user's id in Zabbix by email
-    @usermedia_arr.each { |um| @zbx_user_id = um["userid"] if um["sendto"] == @user.email }
-    puts @zbx_user_id
+    @usermedias_arr.each { |um| @zbx_user_id = um["userid"] if um["sendto"] == @user.email }
 
     if @user.update_attributes(user_params)
 
@@ -123,7 +146,7 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     # find user's id in Zabbix by email
-    @usermedia_arr.each { |um| @zbx_user_id = um["userid"] if um["sendto"] == @user.email }
+    @usermedias_arr.each { |um| @zbx_user_id = um["userid"] if um["sendto"] == @user.email }
 
     # remove user in Zabbix while he exists in DB
     ZBX.query(

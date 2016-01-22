@@ -8,6 +8,9 @@
       = f.input :email, label_html: { class: 'my_class' }, :disabled => true
       = f.input :first_name, label_html: { class: 'my_class' }
       = f.input :last_name, label_html: { class: 'my_class' }
+      = label_tag 'user[type_id]', 'Type'
+      = select_tag 'user[type_id]', options_from_collection_for_select(@types, "id", "name"), class: 'form-control'
+      %br/
       = f.input :team_id, :as => :select, collection: @teams, prompt: "Select team"
       %br
       - if current_user.admin?
