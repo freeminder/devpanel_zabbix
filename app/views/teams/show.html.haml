@@ -1,0 +1,11 @@
+.container
+  %p.lead= "Members of #{@team.name} team: "
+  %hr
+  %div{:align => "right"}
+    - @users.each do |user|
+      = link_to "#{user.first_name} #{user.last_name} (#{user.email})", "/users/#{user.id}" if user.team_id == @team_id
+      %br/
+    %hr
+    = link_to 'Go back', :back, class: 'btn btn-primary'
+    = link_to 'Delete', team_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger'
+    = link_to 'Edit', edit_team_path, class: 'btn btn-warning'

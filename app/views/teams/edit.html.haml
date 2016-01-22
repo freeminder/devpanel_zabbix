@@ -1,0 +1,11 @@
+.container
+  %p.lead= "Edit team"
+  %hr
+  = simple_form_for @team do |f|
+    = f.error_notification
+    .form-group
+      = f.input :name, label_html: { class: 'my_class' }
+    .form-actions
+      = link_to 'Go back', :back, class: 'btn btn-primary'
+      = link_to 'Delete', team_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger'
+      = f.button :submit, "Update", class: 'btn btn-success'

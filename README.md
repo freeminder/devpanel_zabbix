@@ -34,6 +34,7 @@ run in the devpanel_zabbix dir to install the dependencies:
 
 ## Database initialization
 
+    rake db:create
     rake db:migrate
 
 ## Deployment instructions

@@ -1,0 +1,16 @@
+.container
+  %h2
+    %b Internal Teams
+  %table.table
+    %tr
+      %th Team Name
+      %th Users
+    - @teams.each do |team|
+      %tr
+        %td= link_to team.name, "/teams/#{team.id}"
+        %td
+          - @users.each do |user|
+            = link_to user.email, "/users/#{user.id}" if user.team_id == team.id
+  %hr
+  %div{:align => "right"}
+    = link_to 'Add team', new_team_path, class: 'btn btn-success'

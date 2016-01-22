@@ -19,12 +19,12 @@
           %ul.nav.navbar-nav
             - if current_user
               - if current_user.admin?
-                -#= menu_link 'Users', users_path
+                = menu_link 'Users', users_path
+                = menu_link 'Teams', teams_path
               = menu_link 'Hosts', hosts_path
               = menu_link 'Log out', destroy_user_session_path, false, method: :delete
               %li
-                = menu_link "Logged in as #{current_user.email}", false
-                -# user_path(current_user)
+                = menu_link "Logged in as #{current_user.email}", user_path(current_user)
             - else
               %li.dropdown
                 = link_to 'Sign/Log in<b class="caret"></b>'.html_safe, '#', class: 'dropdown-toggle', 'data-toggle' => 'dropdown'

@@ -1,0 +1,10 @@
+.container
+  %p.lead= "Add team"
+  %hr
+  = simple_form_for @team do |f|
+    = f.error_notification
+    .form-group
+      = f.input :name, label_html: { class: 'my_class' }
+    .form-actions
+      = link_to 'Go back', :back, class: 'btn btn-primary'
+      = f.button :submit, "Add team", class: 'btn btn-success'

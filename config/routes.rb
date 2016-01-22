@@ -1,14 +1,10 @@
 Rails.application.routes.draw do
   root 'hosts#index'
-  get 'hosts/index'
 
-  # devise_for :users
   devise_for :users, controllers: {registrations: 'registrations'}
-  # resources :users
-  # resources :teams
-  # resources :clusters
+  resources :users
+  resources :teams
   resources :hosts
-  # resources :apps
 
   # Example resource route with options:
   #   resources :products do

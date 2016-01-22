@@ -1,14 +1,26 @@
 .container
-  %p.lead= "#{@user.first_name} #{@user.last_name} (#{@user.email})"
+  %h2
+    %b User Info
+  %table.table
+    %tr
+      %th Email
+      %th First Name
+      %th Last Name
+      %th Team
+      %th Demo Admin
+      %th Synced with Zabbix
+    %tr
+      %td= link_to @user.email, user_path(@user)
+      %td= @user.first_name
+      %td= @user.last_name
+      %td= @user.team_id ? Team.find(@user.team_id).name : 'No team assigned'
+      %td= @user.admin ? 'Yes' : 'No'
+      - @usermedia_arr.each do |um|
+        %td= um["sendto"] == @user.email ? 'Yes' : 'No'
   %hr
   %div{:align => "right"}
     = "Member since #{l @user.created_at.to_date, format: :short}"
     %hr
-    = "Member of "
-    = link_to @team.name, team_path(@team) if @team
-    = "no one" if @team.nil?
-    = " team"
-    %hr
     = link_to 'Go back', :back, class: 'btn btn-primary'
     = link_to 'Delete', user_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger' if current_user.admin?
-    = link_to 'Edit', edit_user_path, class: 'btn btn-success'
+    = link_to 'Edit', edit_user_path, class: 'btn btn-warning'

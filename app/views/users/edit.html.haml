@@ -1,18 +1,15 @@
 .container
-  %p.lead= "Edit user"
+  %h2
+    %b Edit User
   %hr
   = simple_form_for @user do |f|
     = f.error_notification
     .form-group
-      = f.input :email, label_html: { class: 'my_class' }
+      = f.input :email, label_html: { class: 'my_class' }, :disabled => true
       = f.input :first_name, label_html: { class: 'my_class' }
       = f.input :last_name, label_html: { class: 'my_class' }
       = f.input :team_id, :as => :select, collection: @teams, prompt: "Select team"
       %br
-      = f.input :aws_access_key_id, label_html: { class: 'my_class' }
-      = f.input :aws_secret_access_key, label_html: { class: 'my_class' }
-      = f.input :aws_vpc_id, label_html: { class: 'my_class' }
-      = f.input :aws_region, label_html: { class: 'my_class' }
       - if current_user.admin?
         %div{:align => "right"}
           %b Admin
