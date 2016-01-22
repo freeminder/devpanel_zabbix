@@ -2,7 +2,7 @@ class UsersController < ApplicationController
 
   before_filter :authorize_admin, except: [:show, :edit, :update]
   before_filter :grab_data, only: [:index, :show, :edit, :update, :destroy]
-  before_filter :user_types, only: [:index, :show, :new, :edit]
+  before_filter :user_types, only: [:index, :show]
 
   def grab_data
     # generate array with usermedias
@@ -67,9 +67,9 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     @teams = Team.all
     if @user.save
-      # remap internal group id with Zabbix:
-      # params[:user][:team_id] = 1 if params[:user][:team_id] == 111
-      # params[:user][:team_id] = 2 if params[:user][:team_id] == 222
+      # map internal group id to Zabbix user type:
+      params[:user][:type_id] = 1 if params[:user][:team_id] == 223
+      params[:user][:type_id] = 3 if params[:user][:team_id] == 222
 
       # sync user with Zabbix
       ZBX.query(
@@ -118,7 +118,13 @@ class UsersController < ApplicationController
     # find user's id in Zabbix by email
     @usermedias_arr.each { |um| @zbx_user_id = um["userid"] if um["sendto"] == @user.email }
 
+    # set user's email to new variable before update
+    @user_email = @user.email
+
     if @user.update_attributes(user_params)
+      # map internal group id to Zabbix user type:
+      params[:user][:type_id] = 1 if params[:user][:team_id] == 223
+      params[:user][:type_id] = 3 if params[:user][:team_id] == 222
 
       # update user in Zabbix
       ZBX.query(
@@ -128,9 +134,30 @@ class UsersController < ApplicationController
           "alias":   "#{params[:user][:first_name]} #{params[:user][:last_name]}",
           "name":    params[:user][:first_name],
           "surname": params[:user][:last_name],
-          "type":    params[:user][:team_id],
+          "type":    params[:user][:type_id],
         },
       )
+
+      # update user's email in Zabbix
+      if params[:user][:email] != @user_email
+        ZBX.query(
+          "method": "user.updatemedia",
+          "params": {
+            "users": [
+              {
+                "userid": @zbx_user_id
+              },
+            ],
+            "medias": {
+              "mediatypeid": "1",
+              "sendto": params[:user][:email],
+              "active": 0,
+              "severity": 63,
+              "period": "1-7,00:00-24:00"
+            }
+          },
+        )
+      end
 
       respond_to do |format|
         format.any { redirect_to :back, notice: 'User has been successfully updated in both internal DB and Zabbix!!' }

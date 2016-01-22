@@ -8,7 +8,7 @@
       %th Last Name
       %th Team
       %th Type
-      %th Demo Admin
+      / %th Demo Admin
       %th Synced with Zabbix
     %tr
       %td= @user.email
@@ -18,7 +18,7 @@
       - @zbx_users_arr.each do |u|
         - @user_type = u["type"] if u["name"] == @user.first_name and u["surname"] == @user.last_name
       %td= @types.detect {|type| type["id"] == @user_type.to_i}.name if @user_type and !@user_type.empty?
-      %td= @user.admin ? 'Yes' : 'No'
+      / %td= @user.admin ? 'Yes' : 'No'
       %td= @useremails_arr.include?(@user.email) ? 'Yes' : 'No'
   %hr
   %div{:align => "right"}

@@ -10,8 +10,8 @@
       = f.input :last_name, label_html: { class: 'my_class' }
       = f.input :password, hint: false, error_html: { id: 'password_error'}
       = f.input :password_confirmation, label: false
-      = f.input :type_id, :as => :select, collection: @types, :label_method => :name, :value_method => :id, :label => "Type", :selected => 1
-      = f.input :team_id, :as => :select, collection: @teams, :selected => '111'
+      / = f.input :type_id, :as => :select, collection: @types, :label_method => :name, :value_method => :id, :label => "Type", :selected => 1
+      = f.input :team_id, :as => :select, collection: @teams, :selected => '223'
       %div{:align => "right"}
         %b Demo Admin
         = f.input_field :admin, as: :boolean, boolean_style: :inline
