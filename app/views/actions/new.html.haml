@@ -1,0 +1,19 @@
+.container
+  %p.lead= "Add action"
+  %hr
+  = form_tag("/actions", method: "post") do
+    .form-group
+      / = hidden_field_tag 'all'
+      = label_tag 'name', 'Action Name'
+      = text_field_tag 'name',  'agent01 test action', class: 'form-control'
+      = label_tag 'userid', 'User'
+      = select_tag 'userid', options_for_select(@users.collect {|hg| [ hg['alias'], hg['userid'] ] }), class: 'form-control'
+      = label_tag 'hostid', 'Host'
+      = select_tag 'hostid', options_for_select(@hosts.collect {|hg| [ hg['name'], hg['hostid'] ] }), class: 'form-control'
+      %hr
+
+    .form-actions
+      %div{:align => "right"}
+        = link_to 'Go back', :back, class: 'btn btn-primary'
+        = submit_tag("Add action", class: 'btn btn-success')
+

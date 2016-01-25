@@ -4,7 +4,9 @@ Rails.application.routes.draw do
   devise_for :users, controllers: {registrations: 'registrations'}
   resources :users
   resources :teams
+  resources :actions
   resources :hosts
+  resources :sites
 
   # Example resource route with options:
   #   resources :products do

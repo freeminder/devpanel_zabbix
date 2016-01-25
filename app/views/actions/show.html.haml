@@ -1,0 +1,24 @@
+.container
+  %table.table
+    %tr
+      %th Name
+      %th ID
+      %th User assigned
+      %th Host assigned
+      %th Status
+    %tr
+      %td= @action["name"]
+      %td= @action["actionid"]
+      %td= @action["user"]
+      %td= @action["host"]
+      - if @action["status"] == "0"
+        %td= "Enabled"
+      - else
+        %td= "Disabled"
+  %hr
+
+  %div{:align => "right"}
+    = link_to 'Go back', :back, class: 'btn btn-primary'
+    = link_to 'Delete', @action_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger'
+    = link_to 'Edit', edit_action_path, class: 'btn btn-warning'
+

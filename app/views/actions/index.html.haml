@@ -1,0 +1,26 @@
+.container
+  %h2
+    %b Actions
+  %table.table
+    %tr
+      %th Name
+      %th ID
+      %th User assigned
+      %th Host assigned
+      %th Status
+      %th Delete
+    - @actions_arr.each do |action|
+      %tr
+        %td= action["name"]
+        %td= action["actionid"]
+        %td= action["user"]
+        %td= action["host"]
+        - if action["status"] == "0"
+          %td= "Enabled"
+        - else
+          %td= "Disabled"
+        %td= link_to 'Delete', action_path(action["actionid"]), method: :delete, data: {confirm: "Are you sure?"}
+
+  %hr
+  %div{:align => "right"}
+    = link_to 'Add action', new_action_path, class: 'btn btn-success'
