@@ -1,5 +1,5 @@
 class ActionsController < ApplicationController
-  before_filter :grab_data, except: [:new, :create]
+  before_filter :grab_data, except: [:create]
   before_filter :grab_users_and_hosts, only: [:index, :show, :new]
 
 

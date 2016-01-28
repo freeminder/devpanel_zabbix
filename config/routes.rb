@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   resources :teams
   resources :actions
   resources :hosts
-  resources :sites
+  resources :websites
 
   # Example resource route with options:
   #   resources :products do

@@ -1,0 +1,24 @@
+.container
+  %h2
+    %b Websites
+  %table.table
+    %tr
+      %th HTTP test URL
+      %th HTTP test ID
+      %th HTTP code status
+      %th Host Name related
+      %th Host ID related
+      %th Delete
+    - @httptests.each do |test|
+      - test["steps"].each do |step|
+        %tr
+          %td= link_to step["url"], step["url"]
+          %td= step["httptestid"]
+          %td= step["status_codes"]
+          %td= @hosts.detect {|host| host["hostid"] == test["hostid"]}["host"]
+          %td= test["hostid"]
+          %td= link_to 'Delete', website_path(step["httptestid"]), method: :delete, data: {confirm: "Are you sure?"}
+
+  %hr
+  %div{:align => "right"}
+    = link_to 'Add httptest', new_website_path, class: 'btn btn-success'

@@ -1,0 +1,17 @@
+.container
+  %p.lead= "Add HTTP test"
+  %hr
+  = form_tag("/websites", method: "post") do
+    .form-group
+      = label_tag 'url', 'Website URL'
+      = text_field_tag 'url',  'http://domain.example.com', class: 'form-control'
+      = label_tag 'hostid', 'Host related'
+      = select_tag 'hostid', options_for_select(@hosts.collect {|hg| [ hg['name'], hg['hostid'] ] }), class: 'form-control'
+      %br/
+      %hr
+
+    .form-actions
+      %div{:align => "right"}
+        = link_to 'Go back', :back, class: 'btn btn-primary'
+        = submit_tag("Add HTTP test", class: 'btn btn-success')
+
