@@ -1,0 +1,23 @@
+.container
+  %h2
+    %b Apps
+  %table.table
+    %tr
+      %th Name
+      %th Server
+      %th Disk
+      %th Memory
+    - @apps.each do |app|
+      %tr
+        %td= app[0]
+        %td= @hosts.detect {|host| host["hostid"] == @hostid}["name"]
+        %td= "#{app[1]} MB"
+        %td
+          = "#{app[2]} MB"
+          %br/
+          - if app[3] == "1"
+            = "#{app[3]} process"
+          - else
+            = "#{app[3]} processes"
+
+  %hr
