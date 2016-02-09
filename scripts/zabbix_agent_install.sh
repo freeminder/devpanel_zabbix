@@ -14,8 +14,8 @@ if [ -x /usr/bin/apt-get ]; then
   sed -i 's/ServerActive=127.0.0.1/ServerActive=52.90.49.206/' /etc/zabbix/zabbix_agentd.conf
   sed -i 's/# EnableRemoteCommands=0/EnableRemoteCommands=1/' /etc/zabbix/zabbix_agentd.conf
   HOSTNAME=`hostname` && sed -i "s/Hostname=Zabbix\ server/Hostname=$HOSTNAME/" /etc/zabbix/zabbix_agentd.conf
+  echo "zabbix ALL=NOPASSWD: /opt/webenabled/sbin/check_mem_diskspace_usage.sh" >> /etc/sudoers
   service zabbix-agent restart
-  echo "zabbix ALL=NOPASSWD: bash /usr/local/bin/check_mem_diskspace_usage.sh" >> /etc/sudoers
 fi
 
 # Only run it if we can (ie. on RHEL/CentOS)
@@ -28,6 +28,6 @@ if [ -x /usr/bin/yum ]; then
   sed -i 's/ServerActive=127.0.0.1/ServerActive=52.90.49.206/' /etc/zabbix/zabbix_agentd.conf
   sed -i 's/# EnableRemoteCommands=0/EnableRemoteCommands=1/' /etc/zabbix/zabbix_agentd.conf
   HOSTNAME=`hostname` && sed -i "s/Hostname=Zabbix\ server/Hostname=$HOSTNAME/" /etc/zabbix/zabbix_agentd.conf
+  echo "zabbix ALL=NOPASSWD: /opt/webenabled/sbin/check_mem_diskspace_usage.sh" >> /etc/sudoers
   service zabbix-agent restart
-  echo "zabbix ALL=NOPASSWD: bash /usr/local/bin/check_mem_diskspace_usage.sh" >> /etc/sudoers
 fi
