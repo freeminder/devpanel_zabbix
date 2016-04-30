@@ -66,7 +66,6 @@ class ActionsController < ApplicationController
       "params": {
         "name": params[:name],
         "eventsource": 0,
-        "evaltype": 0,
         "status": 0,
         "esc_period": 120,
         "def_shortdata": "{TRIGGER.NAME}: {TRIGGER.STATUS}",
@@ -76,13 +75,30 @@ class ActionsController < ApplicationController
         "r_longdata": "{TRIGGER.NAME}: {TRIGGER.STATUS}",
         "r_shortdata": "{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}",
 
-        "conditions": [
-          {
-            "conditiontype": 1,
-            "operator": 0,
-            "value": params[:hostid]
-          },
-        ],
+        "filter": {
+          "evaltype": 3,
+          "formula": "A and B and C",
+          "conditions": [
+            {
+              "conditiontype": 16,
+              "operator": 7,
+              "value": "",
+              "formulaid": "A"
+            },
+            {
+              "conditiontype": 5,
+              "operator": 5,
+              "value": "1",
+              "formulaid": "B"
+            },
+            {
+              "conditiontype": 1,
+              "operator": 0,
+              "value": params[:hostid],
+              "formulaid": "C"
+            }
+          ]
+        },
         "operations": [
           {
             "operationtype": 0,
@@ -106,43 +122,6 @@ class ActionsController < ApplicationController
       render 'new'
     end
   end
-
-  # def edit
-  #   if params[:id] == params[:id].to_i.to_s
-  #     @action = @actions_arr.select { |v| v["actionid"] =~ /#{params[:id]}/ }.first
-  #   else
-  #     # show error popup
-  #     respond_to do |format|
-  #       format.any { redirect_to action: 'show' }
-  #       flash[:error] = 'Wrong action id!'
-  #     end
-  #   end
-  # end
-
-  # def update
-  #   if params[:id] == params[:id].to_i.to_s
-  #     @action = @actions_arr.select { |v| v["actionid"] =~ /#{params[:id]}/ }.first
-
-  #     if ZBX.query(
-  #       "method": "action.update",
-  #       "params": {
-  #           "actionid": params[:id],
-  #       },
-  #     )['actionids']
-
-  #       # show success popup
-  #       respond_to do |format|
-  #         format.any { redirect_to :back, notice: 'Action has been successfully updated!' }
-  #       end
-  #     end
-  #   else
-  #     # show error popup
-  #     respond_to do |format|
-  #       format.any { redirect_to action: 'edit' }
-  #       flash[:error] = 'Wrong action id!'
-  #     end
-  #   end
-  # end
 
   def destroy
     if params[:id] == params[:id].to_i.to_s
