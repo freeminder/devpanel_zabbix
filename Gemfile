@@ -7,9 +7,12 @@ gem 'sqlite3'
 # Use Devise auth
 gem 'devise'
 # Ruby wrapper to Zabbix API
-gem 'zabbixapi', '2.2.2'
+gem 'zabbixapi', '2.4.7'
 # Mechanize for grabbing graphs from front-end
 gem 'mechanize'
+# Strip domains from urls
+gem 'public_suffix'
+gem 'addressable'
 
 # Use SCSS for stylesheets
 gem 'bootstrap-sass', '~> 3.3.4'

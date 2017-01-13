@@ -1,4 +1,9 @@
 class WebsitesController < ApplicationController
+  require 'open-uri'
+  require 'uri/http'
+  require 'addressable/uri'
+  require 'public_suffix'
+
   before_filter :grab_data, only: [:index, :new]
 
 
@@ -27,6 +32,14 @@ class WebsitesController < ApplicationController
 
   def new
   end
+
+  # def show
+  #   # extract site domain from URL
+  #   uri = URI.parse()
+  #   domain = PublicSuffix.parse(uri.host)
+  #   site_domain = domain.domain
+  #   body = open("#{ENV['SUCURI_API']}#{site_domain}").read
+  # end
 
   def create
     if ZBX.query(

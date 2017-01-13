@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :hosts
   resources :websites
   resources :apps
+  resources :items
 
   # Example resource route with options:
   #   resources :products do

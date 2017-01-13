@@ -1,0 +1,30 @@
+.container
+  %h2
+    %b= "Items for host '#{@host["host"]}' with ID #{@host["hostid"]}"
+  %table.table
+    %tr
+      %th Item ID
+      %th Item Name
+      %th Item Value
+    - @items.each do |item|
+      %tr
+        %td= item["itemid"]
+        %td= item["name"]
+        %td= item["lastvalue"]
+
+  / %br/
+  / %p.lead= "Host graphs with debug info:"
+  / %hr
+  / - @host_graphs_output.each do |g|
+  /   %p.lead= "#{g['name']} graph:"
+  /   %img(src="/images/graph_#{g['graphid']}.png")
+  /   %br/
+  /   %br/
+  /   %pre.code= g
+  /   %hr
+
+  / %div{:align => "right"}
+  /   = link_to 'Go back', :back, class: 'btn btn-primary'
+  /   = link_to 'Delete', @host_path, method: :delete, data: {confirm: "Are you sure?"}, class: 'btn btn-danger' # if current_user.admin?
+  /   = link_to 'Edit', edit_host_path, class: 'btn btn-warning'
+

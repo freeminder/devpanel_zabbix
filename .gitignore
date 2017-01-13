@@ -19,3 +19,6 @@
 # Custom
 /config/local_env.yml
 /public/images/
+
+/tmp.txt
+/scripts/*

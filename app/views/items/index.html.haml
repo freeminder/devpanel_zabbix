@@ -1,0 +1,7 @@
+.container
+  %h2
+    %b Select host to show items
+  - @hosts_arr.each do |host|
+    %li
+      %a{ href: item_path(host["hostid"]) }
+        %strong= "Show items for host '#{host["host"]}' with ID #{host["hostid"]}"

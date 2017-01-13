@@ -18,6 +18,16 @@
           %td= @hosts.detect {|host| host["hostid"] == test["hostid"]}["host"]
           %td= test["hostid"]
           %td= link_to 'Delete', website_path(step["httptestid"]), method: :delete, data: {confirm: "Are you sure?"}
+        %tr
+          %td{:colspan => 6}
+            - uri = URI.parse(step["url"])
+            - domain = PublicSuffix.parse(uri.host)
+            - site_domain = domain.domain
+            - body = open("#{ENV['SUCURI_API']}#{site_domain}", :read_timeout => 100).read
+            %br/
+            %p= "Sucuri's debug info for domain #{site_domain}:"
+            %pre.code= body
+
 
   %hr
   %div{:align => "right"}
