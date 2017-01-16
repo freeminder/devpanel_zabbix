@@ -9,6 +9,7 @@
       %th Host Name related
       %th Host ID related
       %th Delete
+      %th Update
     - @httptests.each do |test|
       - test["steps"].each do |step|
         %tr
@@ -18,15 +19,10 @@
           %td= @hosts.detect {|host| host["hostid"] == test["hostid"]}["host"]
           %td= test["hostid"]
           %td= link_to 'Delete', website_path(step["httptestid"]), method: :delete, data: {confirm: "Are you sure?"}
-        %tr
-          %td{:colspan => 6}
-            - uri = URI.parse(step["url"])
-            - domain = PublicSuffix.parse(uri.host)
-            - site_domain = domain.domain
-            - body = open("#{ENV['SUCURI_API']}#{site_domain}", :read_timeout => 100).read
-            %br/
-            %p= "Sucuri's debug info for domain #{site_domain}:"
-            %pre.code= body
+          - if test["status"] == "0"
+            %td= link_to 'Disable', website_path(:id => step["httptestid"], :status => "1"), method: :patch
+          - elsif test["status"] == "1"
+            %td= link_to 'Enable', website_path(:id => step["httptestid"], :status => "0"), method: :patch
 
 
   %hr

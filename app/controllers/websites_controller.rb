@@ -65,6 +65,31 @@ class WebsitesController < ApplicationController
     end
   end
 
+  def update
+    if ZBX.query(
+      "method": "httptest.update",
+      "params": {
+        # "name": params[:url],
+        "httptestid": params[:id],
+        "status": params[:status],
+        # "steps": [
+        #   {
+        #     "name": params[:url],
+        #     "url": params[:url],
+        #     "status_codes": 200,
+        #     "no": 1
+        #   },
+        # ]
+      },
+    )['httptestids']
+      # show success popup
+      flash[:notice] = "HTTP test has been successfully updated!"
+      redirect_to controller: 'websites', action: 'index'
+    else
+      render 'new'
+    end
+  end
+
   def destroy
     if params[:id] == params[:id].to_i.to_s
       ZBX.query(
